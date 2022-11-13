@@ -1,0 +1,264 @@
+---
+title: "Review Analysis"
+author: "Kaiyan"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::readthedown:
+    self_contained: true
+    thumbnails: true
+    lightbox: true
+    gallery: false
+    highlight: tango
+    df_print: paged
+---
+# 1.
+
+```{r}
+data <- read.csv("data_selected.csv")
+data <- data[,-1]
+
+data
+head(data[grep("menu",data$text),c(4:8)])
+
+table(data[grep("menu",data$text),4])
+
+table(data[grep("experience",data$text),4])
+
+table(data[,4])
+```
+
+
+```{r}
+library(stringr)
+library(tidytext)
+library(tidyr)
+library(dplyr)
+library(topicmodels)
+library(ggplot2)
+library(stopwords)
+library(readr)
+library(tidyverse)
+```
+
+
+
+
+```{r}
+#stopwords
+my_stopwords <- strsplit(read_file("gist_stopwords.txt"),",")[[1]]
+stop_words_all <- rbind(stop_words,data.frame("word"=my_stopwords,"lexicon"=rep("user",length(my_stopwords))))
+
+# split into words
+data_word <- data %>%
+  unnest_tokens(word, text) %>%
+  anti_join(stop_words_all)
+```
+
+# doc: take each review as a document
+
+## 1 star
+```{r}
+# find document-word counts
+star1_dtm <- data_word[data_word$stars==1,] %>%
+  count(review_id, word, sort = TRUE) %>%
+  cast_dtm(review_id, word, n)
+
+star1_lda <- LDA(star1_dtm, k = 6, control = list(seed = 1234))
+
+stars_topics <- tidy(star1_lda, matrix = "beta")
+
+top_terms <- stars_topics %>%
+  group_by(topic) %>%
+  slice_max(beta, n = 50) %>% 
+  ungroup() %>%
+  arrange(topic, -beta) 
+
+top_terms%>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(beta, term, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  scale_y_reordered()
+
+```
+
+## 2 stars
+
+```{r}
+# find document-word counts
+stars2_lda <- data_word[data_word$stars==2,] %>%
+  count(review_id, word, sort = TRUE) %>%
+  cast_dtm(review_id, word, n) %>%
+  LDA(k = 6, control = list(seed = 1234))
+
+stars_topics <- tidy(stars2_lda, matrix = "beta")
+
+top_terms <- stars_topics %>%
+  group_by(topic) %>%
+  slice_max(beta, n = 50) %>% 
+  ungroup() %>%
+  arrange(topic, -beta) 
+
+top_terms%>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(beta, term, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  scale_y_reordered()
+
+```
+
+
+## 3 stars
+
+```{r}
+# find document-word counts
+stars3_lda <- data_word[data_word$stars==3,] %>%
+  count(review_id, word, sort = TRUE) %>%
+  cast_dtm(review_id, word, n) %>%
+  LDA(k = 6, control = list(seed = 1234))
+
+stars_topics <- tidy(stars3_lda, matrix = "beta")
+
+top_terms <- stars_topics %>%
+  group_by(topic) %>%
+  slice_max(beta, n = 50) %>% 
+  ungroup() %>%
+  arrange(topic, -beta) 
+
+top_terms%>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(beta, term, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  scale_y_reordered()
+
+```
+
+## 4 stars
+
+```{r}
+# find document-word counts
+stars4_lda <- data_word[data_word$stars==4,] %>%
+  count(review_id, word, sort = TRUE) %>%
+  cast_dtm(review_id, word, n) %>%
+  LDA(k = 6, control = list(seed = 1234))
+
+stars_topics <- tidy(stars4_lda, matrix = "beta")
+
+top_terms <- stars_topics %>%
+  group_by(topic) %>%
+  slice_max(beta, n = 50) %>% 
+  ungroup() %>%
+  arrange(topic, -beta) 
+
+top_terms%>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(beta, term, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  scale_y_reordered()
+
+```
+
+## 5 stars
+```{r}
+# find document-word counts
+stars5_lda <- data_word[data_word$stars==5,] %>%
+  count(review_id, word, sort = TRUE) %>%
+  cast_dtm(review_id, word, n) %>%
+  LDA(k = 6, control = list(seed = 1234))
+
+stars_topics <- tidy(stars5_lda, matrix = "beta")
+
+top_terms <- stars_topics %>%
+  group_by(topic) %>%
+  slice_max(beta, n = 50) %>% 
+  ungroup() %>%
+  arrange(topic, -beta) 
+
+top_terms%>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(beta, term, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  scale_y_reordered()
+
+```
+
+
+
+
+# perplexity
+
+Inflection point: n=6
+```{r}
+'''
+n_topics <- c(2,4,5,6,7,8,10,20)
+
+ap_lda_compare <- n_topics %>%
+map(LDA, x = stars_dtm, control = list(seed = 1109)) 
+
+perplexity_lda <- c()
+for (i in ap_lda_compare) {
+  perplexity_lda <- c(perplexity_lda,perplexity(i))
+}
+
+
+df <- data.frame(n_topics = n_topics, perplexity_lda = perplexity_lda)
+
+ggplot(data = df, mapping = aes(x = n_topics, y = perplexity_lda)) + geom_line() + geom_point()
+
+
+nt <- c(nt,n_topics)
+pp <- c(pp,perplexity_lda)
+
+df <- data.frame("n_topics"=nt,"perplexity_lda"=pp)
+df
+ggplot(data = df, aes(x = n_topics, y = perplexity_lda)) + geom_line() + geom_point()
+'''
+```
+
+
+
+
+# doc: take each star as a document (5 docs)
+```{r}
+star1_dtm <- data_word %>%
+  count(stars, word, sort = TRUE) %>%
+  cast_dtm(stars, word, n)
+
+stars_lda <- LDA(stars_dtm, k = 6, control = list(seed = 1234))
+
+stars_topics <- tidy(stars_lda, matrix = "beta")
+
+top_terms <- stars_topics %>%
+  group_by(topic) %>%
+  slice_max(beta, n = 50) %>% 
+  ungroup() %>%
+  arrange(topic, -beta)
+
+
+top_terms %>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(beta, term, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  scale_y_reordered()
+
+```
+
+
+```{r}
+stars_gamma <- tidy(stars_lda, matrix = "gamma")
+
+# add other id cols
+
+stars_gamma %>%
+  ggplot(aes(factor(topic), gamma)) +
+  geom_boxplot() +
+  facet_wrap(~ document) +
+  labs(x = "topic", y = expression(gamma))
+
+```
+
