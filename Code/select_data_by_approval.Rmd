@@ -1,0 +1,43 @@
+---
+title: "Review Analysis"
+author: "Kaiyan"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::readthedown:
+    self_contained: true
+    thumbnails: true
+    lightbox: true
+    gallery: false
+    highlight: tango
+    df_print: paged
+---
+
+```{r}
+path <- "Data"
+fileNames <- dir(path) 
+
+filePath <- sapply(fileNames[-1], function(x){ 
+  paste(path,x,sep='/')})
+
+
+data <- lapply(filePath, function(x){
+  read.csv(x, header=T)})  
+
+
+for( i in 2:length(data)){
+  data[[1]] = rbind(data[[1]],data[[i]])
+  data[[i]] = 0
+}
+data <- data[[1]]
+
+data$approval <- data$useful+data$funny+data$cool
+
+
+quantile(data$approval,na.rm = TRUE,probs = seq(0, 1, 0.05))
+
+data0 <- data[data$approval>5,]
+
+
+write.csv(data0,"data_selected.csv")
+```
+

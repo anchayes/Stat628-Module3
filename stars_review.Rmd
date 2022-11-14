@@ -14,7 +14,7 @@ output:
 # 1.
 
 ```{r}
-data <- read.csv("data_selected.csv")
+data <- read.csv("./Data/data_selected.csv")
 data <- data[,-1]
 
 data
@@ -69,7 +69,7 @@ stars_topics <- tidy(star1_lda, matrix = "beta")
 
 top_terms <- stars_topics %>%
   group_by(topic) %>%
-  slice_max(beta, n = 50) %>% 
+  slice_max(beta, n = 30) %>% 
   ungroup() %>%
   arrange(topic, -beta) 
 
@@ -78,7 +78,8 @@ top_terms%>%
   ggplot(aes(beta, term, fill = factor(topic))) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~ topic, scales = "free") +
-  scale_y_reordered()
+  scale_y_reordered()+ 
+  ggtitle("Topics in 1-star reviews")
 
 ```
 
@@ -95,7 +96,7 @@ stars_topics <- tidy(stars2_lda, matrix = "beta")
 
 top_terms <- stars_topics %>%
   group_by(topic) %>%
-  slice_max(beta, n = 50) %>% 
+  slice_max(beta, n = 30) %>% 
   ungroup() %>%
   arrange(topic, -beta) 
 
@@ -104,7 +105,8 @@ top_terms%>%
   ggplot(aes(beta, term, fill = factor(topic))) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~ topic, scales = "free") +
-  scale_y_reordered()
+  scale_y_reordered()+ 
+  ggtitle("Topics in 2-star reviews")
 
 ```
 
@@ -122,7 +124,7 @@ stars_topics <- tidy(stars3_lda, matrix = "beta")
 
 top_terms <- stars_topics %>%
   group_by(topic) %>%
-  slice_max(beta, n = 50) %>% 
+  slice_max(beta, n = 30) %>% 
   ungroup() %>%
   arrange(topic, -beta) 
 
@@ -131,7 +133,8 @@ top_terms%>%
   ggplot(aes(beta, term, fill = factor(topic))) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~ topic, scales = "free") +
-  scale_y_reordered()
+  scale_y_reordered()+ 
+  ggtitle("Topics in 3-star reviews")
 
 ```
 
@@ -148,7 +151,7 @@ stars_topics <- tidy(stars4_lda, matrix = "beta")
 
 top_terms <- stars_topics %>%
   group_by(topic) %>%
-  slice_max(beta, n = 50) %>% 
+  slice_max(beta, n = 30) %>% 
   ungroup() %>%
   arrange(topic, -beta) 
 
@@ -157,7 +160,8 @@ top_terms%>%
   ggplot(aes(beta, term, fill = factor(topic))) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~ topic, scales = "free") +
-  scale_y_reordered()
+  scale_y_reordered()+ 
+  ggtitle("Topics in 4-star reviews")
 
 ```
 
@@ -173,7 +177,7 @@ stars_topics <- tidy(stars5_lda, matrix = "beta")
 
 top_terms <- stars_topics %>%
   group_by(topic) %>%
-  slice_max(beta, n = 50) %>% 
+  slice_max(beta, n = 30) %>% 
   ungroup() %>%
   arrange(topic, -beta) 
 
@@ -182,41 +186,9 @@ top_terms%>%
   ggplot(aes(beta, term, fill = factor(topic))) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~ topic, scales = "free") +
-  scale_y_reordered()
+  scale_y_reordered()+ 
+  ggtitle("Topics in 5-star reviews")
 
-```
-
-
-
-
-# perplexity
-
-Inflection point: n=6
-```{r}
-'''
-n_topics <- c(2,4,5,6,7,8,10,20)
-
-ap_lda_compare <- n_topics %>%
-map(LDA, x = stars_dtm, control = list(seed = 1109)) 
-
-perplexity_lda <- c()
-for (i in ap_lda_compare) {
-  perplexity_lda <- c(perplexity_lda,perplexity(i))
-}
-
-
-df <- data.frame(n_topics = n_topics, perplexity_lda = perplexity_lda)
-
-ggplot(data = df, mapping = aes(x = n_topics, y = perplexity_lda)) + geom_line() + geom_point()
-
-
-nt <- c(nt,n_topics)
-pp <- c(pp,perplexity_lda)
-
-df <- data.frame("n_topics"=nt,"perplexity_lda"=pp)
-df
-ggplot(data = df, aes(x = n_topics, y = perplexity_lda)) + geom_line() + geom_point()
-'''
 ```
 
 
@@ -224,7 +196,7 @@ ggplot(data = df, aes(x = n_topics, y = perplexity_lda)) + geom_line() + geom_po
 
 # doc: take each star as a document (5 docs)
 ```{r}
-star1_dtm <- data_word %>%
+stars_dtm <- data_word %>%
   count(stars, word, sort = TRUE) %>%
   cast_dtm(stars, word, n)
 
@@ -244,7 +216,8 @@ top_terms %>%
   ggplot(aes(beta, term, fill = factor(topic))) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~ topic, scales = "free") +
-  scale_y_reordered()
+  scale_y_reordered()+ 
+  ggtitle("Topics in all the reviews")
 
 ```
 
@@ -254,11 +227,45 @@ stars_gamma <- tidy(stars_lda, matrix = "gamma")
 
 # add other id cols
 
+stars_gamma[is.na(stars_gamma$document),1] <- rep("no rating",6)
+
+stars_gamma
+
 stars_gamma %>%
   ggplot(aes(factor(topic), gamma)) +
-  geom_boxplot() +
+  geom_bar(stat='identity') +
   facet_wrap(~ document) +
-  labs(x = "topic", y = expression(gamma))
+  labs(x = "topic", y = expression(gamma))+ 
+  ggtitle("Topics distribution in each star-level")
 
 ```
 
+
+# perplexity
+
+Inflection point: n=6
+```{r}
+n_topics <- c(2,4,5,6,7,8,10,20)
+
+ap_lda_compare <- n_topics %>%
+map(LDA, x = stars_dtm, control = list(seed = 1109)) 
+
+perplexity_lda <- c()
+for (i in ap_lda_compare) {
+  perplexity_lda <- c(perplexity_lda,perplexity(i))
+}
+
+
+df <- data.frame(n_topics = n_topics, perplexity_lda = perplexity_lda)
+
+ggplot(data = df, mapping = aes(x = n_topics, y = perplexity_lda)) + geom_line() + geom_point()
+
+'''
+nt <- c(nt,n_topics)
+pp <- c(pp,perplexity_lda)
+
+df <- data.frame("n_topics"=nt,"perplexity_lda"=pp)
+df
+ggplot(data = df, aes(x = n_topics, y = perplexity_lda)) + geom_line() + geom_point()
+'''
+```
