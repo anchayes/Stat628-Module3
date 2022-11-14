@@ -18,7 +18,9 @@ data <- read.csv("./Data/data_selected.csv")
 data <- data[,-1]
 
 data
-head(data[grep("menu",data$text),c(4:8)])
+
+d2s <- data[data$stars=="2",]
+head(d2s[grep("love",data$text),])
 
 table(data[grep("menu",data$text),4])
 
@@ -63,7 +65,7 @@ star1_dtm <- data_word[data_word$stars==1,] %>%
   count(review_id, word, sort = TRUE) %>%
   cast_dtm(review_id, word, n)
 
-star1_lda <- LDA(star1_dtm, k = 6, control = list(seed = 1234))
+star1_lda <- LDA(star1_dtm, k = 3, control = list(seed = 1234))
 
 stars_topics <- tidy(star1_lda, matrix = "beta")
 
@@ -90,7 +92,7 @@ top_terms%>%
 stars2_lda <- data_word[data_word$stars==2,] %>%
   count(review_id, word, sort = TRUE) %>%
   cast_dtm(review_id, word, n) %>%
-  LDA(k = 6, control = list(seed = 1234))
+  LDA(k = 3, control = list(seed = 1234))
 
 stars_topics <- tidy(stars2_lda, matrix = "beta")
 
@@ -114,11 +116,18 @@ top_terms%>%
 ## 3 stars
 
 ```{r}
+d3s <- data[data$stars=="3",8]
+head(d3s[grep("menu",d3s$text),8])
+
+"It's nice to have a decent culinary option in NE, but I hear folks talking about this place like it is the second coming of Christ!\n\nThe duck fries were some of best fries I've ever had.  Get them, won't disappoint. The duck sandwich and pork roll burger were both bland and barely mediocre. Salads were grossly overdressed.   \n\nI'd try it again if I were in the NE."        
+```
+
+```{r}
 # find document-word counts
 stars3_lda <- data_word[data_word$stars==3,] %>%
   count(review_id, word, sort = TRUE) %>%
   cast_dtm(review_id, word, n) %>%
-  LDA(k = 6, control = list(seed = 1234))
+  LDA(k = 3, control = list(seed = 1234))
 
 stars_topics <- tidy(stars3_lda, matrix = "beta")
 
@@ -145,7 +154,7 @@ top_terms%>%
 stars4_lda <- data_word[data_word$stars==4,] %>%
   count(review_id, word, sort = TRUE) %>%
   cast_dtm(review_id, word, n) %>%
-  LDA(k = 6, control = list(seed = 1234))
+  LDA(k = 3, control = list(seed = 1234))
 
 stars_topics <- tidy(stars4_lda, matrix = "beta")
 
@@ -171,7 +180,7 @@ top_terms%>%
 stars5_lda <- data_word[data_word$stars==5,] %>%
   count(review_id, word, sort = TRUE) %>%
   cast_dtm(review_id, word, n) %>%
-  LDA(k = 6, control = list(seed = 1234))
+  LDA(k = 3, control = list(seed = 1234))
 
 stars_topics <- tidy(stars5_lda, matrix = "beta")
 
