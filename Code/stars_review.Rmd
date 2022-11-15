@@ -54,6 +54,9 @@ stop_words_all <- rbind(stop_words,data.frame("word"=my_stopwords,"lexicon"=rep(
 data_word <- data %>%
   unnest_tokens(word, text) %>%
   anti_join(stop_words_all)
+
+
+my_stopwords
 ```
 
 # doc: take each review as a document
