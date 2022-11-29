@@ -14,7 +14,7 @@ output:
 # 1.
 
 ```{r}
-data <- read.csv("../Data/df_train.csv")
+data <- read.csv("../Data/yelp_review_filtered_breakfast.csv")
 head(data)
 ```
 
@@ -43,10 +43,6 @@ stop_words_all <- rbind(stop_words,data.frame("word"=my_stopwords,"lexicon"=rep(
 data_word <- data %>%
   unnest_tokens(word, text) %>%
   anti_join(stop_words_all)
-
-data_word
-
-write.csv(data_word,"../Data/data_word.csv")
 ```
 
 # doc: take each review as a document
@@ -283,11 +279,10 @@ ggplot(data = df, aes(x = n_topics, y = perplexity_lda)) + geom_line() + geom_po
 
 
 # doc: take each row as a document (42194 docs)
+
 ```{r}
 data_word_count <- data_word %>%
   count(review_id, word, sort = TRUE)
-
-write.csv(data_word_count,"../Data/data_word_count.csv")
 
 review_id_dtm <- data_word_count %>%
   cast_dtm(review_id, word, n)
@@ -323,17 +318,20 @@ ggplot(data = df, aes(x = n_topics, y = perplexity_lda)) + geom_line() + geom_po
 
 
 
+
 ## lda
 ```{r}
 review_id_lda <- LDA(review_id_dtm, k = 10, control = list(seed = 1234))
 
 review_id_topics <- tidy(review_id_lda, matrix = "beta")
 
-top_terms <- stars_topics %>%
+top_terms <- review_id_topics %>%
   group_by(topic) %>%
   slice_max(beta, n = 50) %>% 
   ungroup() %>%
   arrange(topic, -beta)
+
+write.csv(top_terms,"../Data/top_terms.csv")
 
 perplexity(review_id_lda)
 ```
@@ -348,8 +346,6 @@ top_terms %>%
   scale_y_reordered()+ 
   ggtitle("Topics in all the reviews")
 
-
-write.csv(top_terms,"../Data/top_terms.csv")
 ```
 
 
@@ -357,27 +353,20 @@ write.csv(top_terms,"../Data/top_terms.csv")
 review_id_gamma <- tidy(review_id_lda, matrix = "gamma")
 
 # add other id cols
-
-review_id_gamma
-
-
 library(reshape2)
-
-
-
 
 review_id_gamma_wide <- review_id_gamma %>%
   dcast(document ~ topic, value.var="gamma")
 
 colnames(review_id_gamma_wide) <- c("review_id",paste("Topic",colnames(review_id_gamma_wide[-1]),sep=""))
 
-review_id_gamma_wide
+
 
 yelp_review_add_gamma <- merge(data,review_id_gamma_wide,by="review_id")
 
-yelp_review_add_gamma
-
 write.csv(yelp_review_add_gamma,"../Data/yelp_review_add_gamma.csv")
+
+yelp_review_add_gamma
 ```
 
 
