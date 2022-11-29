@@ -14,19 +14,8 @@ output:
 # 1.
 
 ```{r}
-data <- read.csv("./Data/data_selected.csv")
-data <- data[,-1]
-
-data
-
-d2s <- data[data$stars=="2",]
-head(d2s[grep("love",data$text),])
-
-table(data[grep("menu",data$text),4])
-
-table(data[grep("experience",data$text),4])
-
-table(data[,4])
+data <- read.csv("../Data/df_train.csv")
+head(data)
 ```
 
 
@@ -55,8 +44,9 @@ data_word <- data %>%
   unnest_tokens(word, text) %>%
   anti_join(stop_words_all)
 
+data_word
 
-my_stopwords
+write.csv(data_word,"../Data/data_word.csv")
 ```
 
 # doc: take each review as a document
@@ -206,6 +196,8 @@ top_terms%>%
 
 
 
+
+
 # doc: take each star as a document (5 docs)
 ```{r}
 stars_dtm <- data_word %>%
@@ -253,8 +245,7 @@ stars_gamma %>%
 ```
 
 
-# perplexity
-
+## perplexity
 Inflection point: n=6
 ```{r}
 n_topics <- c(2,4,5,6,7,8,10,20)
@@ -281,3 +272,128 @@ df
 ggplot(data = df, aes(x = n_topics, y = perplexity_lda)) + geom_line() + geom_point()
 '''
 ```
+
+
+
+```{r}
+
+```
+
+
+
+
+# doc: take each row as a document (42194 docs)
+```{r}
+data_word_count <- data_word %>%
+  count(review_id, word, sort = TRUE)
+
+write.csv(data_word_count,"../Data/data_word_count.csv")
+
+review_id_dtm <- data_word_count %>%
+  cast_dtm(review_id, word, n)
+review_id_dtm
+```
+
+## perplexity skip
+```{r}
+n_topics <- c(5,10,15,20,50,100)
+
+ap_lda_compare <- n_topics %>%
+map(LDA, x = review_id_dtm, control = list(seed = 1109)) 
+
+perplexity_lda <- c()
+for (i in ap_lda_compare) {
+  perplexity_lda <- c(perplexity_lda,perplexity(i))
+}
+
+
+df <- data.frame(n_topics = n_topics, perplexity_lda = perplexity_lda)
+
+ggplot(data = df, mapping = aes(x = n_topics, y = perplexity_lda)) + geom_line() + geom_point()
+
+'''
+nt <- c(nt,n_topics)
+pp <- c(pp,perplexity_lda)
+
+df <- data.frame("n_topics"=nt,"perplexity_lda"=pp)
+df
+ggplot(data = df, aes(x = n_topics, y = perplexity_lda)) + geom_line() + geom_point()
+'''
+```
+
+
+
+## lda
+```{r}
+review_id_lda <- LDA(review_id_dtm, k = 10, control = list(seed = 1234))
+
+review_id_topics <- tidy(review_id_lda, matrix = "beta")
+
+top_terms <- stars_topics %>%
+  group_by(topic) %>%
+  slice_max(beta, n = 50) %>% 
+  ungroup() %>%
+  arrange(topic, -beta)
+
+perplexity(review_id_lda)
+```
+
+
+```{r}
+top_terms %>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(beta, term, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  scale_y_reordered()+ 
+  ggtitle("Topics in all the reviews")
+
+
+write.csv(top_terms,"../Data/top_terms.csv")
+```
+
+
+```{r}
+review_id_gamma <- tidy(review_id_lda, matrix = "gamma")
+
+# add other id cols
+
+review_id_gamma
+
+
+library(reshape2)
+
+
+
+
+review_id_gamma_wide <- review_id_gamma %>%
+  dcast(document ~ topic, value.var="gamma")
+
+colnames(review_id_gamma_wide) <- c("review_id",paste("Topic",colnames(review_id_gamma_wide[-1]),sep=""))
+
+review_id_gamma_wide
+
+yelp_review_add_gamma <- merge(data,review_id_gamma_wide,by="review_id")
+
+yelp_review_add_gamma
+
+write.csv(yelp_review_add_gamma,"../Data/yelp_review_add_gamma.csv")
+```
+
+
+
+```{r}
+
+review_id_gamma %>%
+  ggplot(aes(factor(topic), gamma)) +
+  geom_bar(stat='identity') +
+  facet_wrap(~ document) +
+  labs(x = "topic", y = expression(gamma))+ 
+  ggtitle("Topics distribution in each star-level")
+
+```
+
+
+```{r}
+```
+
