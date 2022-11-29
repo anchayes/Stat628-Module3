@@ -278,6 +278,7 @@ ggplot(data = df, aes(x = n_topics, y = perplexity_lda)) + geom_line() + geom_po
 
 
 
+
 # doc: take each row as a document (42194 docs)
 
 ```{r}
@@ -289,35 +290,10 @@ review_id_dtm <- data_word_count %>%
 review_id_dtm
 ```
 
-## perplexity skip
 ```{r}
-n_topics <- c(5,10,15,20,50,100)
-
-ap_lda_compare <- n_topics %>%
-map(LDA, x = review_id_dtm, control = list(seed = 1109)) 
-
-perplexity_lda <- c()
-for (i in ap_lda_compare) {
-  perplexity_lda <- c(perplexity_lda,perplexity(i))
-}
-
-
-df <- data.frame(n_topics = n_topics, perplexity_lda = perplexity_lda)
-
-ggplot(data = df, mapping = aes(x = n_topics, y = perplexity_lda)) + geom_line() + geom_point()
-
-'''
-nt <- c(nt,n_topics)
-pp <- c(pp,perplexity_lda)
-
-df <- data.frame("n_topics"=nt,"perplexity_lda"=pp)
-df
-ggplot(data = df, aes(x = n_topics, y = perplexity_lda)) + geom_line() + geom_point()
-'''
+data_word %>%
+  count(word, sort = TRUE)
 ```
-
-
-
 
 ## lda
 ```{r}
@@ -338,6 +314,7 @@ perplexity(review_id_lda)
 
 
 ```{r}
+# ggplot save 
 top_terms %>%
   mutate(term = reorder_within(term, beta, topic)) %>%
   ggplot(aes(beta, term, fill = factor(topic))) +
@@ -348,6 +325,9 @@ top_terms %>%
 
 ```
 
+```{r}
+review_id_topics
+```
 
 ```{r}
 review_id_gamma <- tidy(review_id_lda, matrix = "gamma")
@@ -372,7 +352,7 @@ yelp_review_add_gamma
 
 
 ```{r}
-
+# save later
 review_id_gamma %>%
   ggplot(aes(factor(topic), gamma)) +
   geom_bar(stat='identity') +
@@ -382,7 +362,31 @@ review_id_gamma %>%
 
 ```
 
+# logistic regression
+```{r}
+lm1<- lm(stars~Topic1+Topic2+Topic3+Topic4+Topic5+Topic6+Topic7+Topic8+Topic9+Topic10,yelp_review_add_gamma)
+
+summary(lm1)
+```
 
 ```{r}
+lm1<- lm(stars~Topic1+Topic3+Topic6+Topic8+Topic9+Topic10,yelp_review_add_gamma)
+
+summary(lm1)
+
+plot(lm1)
 ```
+
+
+```{r}
+library(stats)
+
+glm1<- glm(stars~Topic1+Topic3+Topic6+Topic8+Topic9+Topic10,
+           family = gaussian, 
+           yelp_review_add_gamma)
+
+
+summary(glm1)
+```
+
 
