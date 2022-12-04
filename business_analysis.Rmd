@@ -1,0 +1,94 @@
+---
+title: "business_analysis"
+output: html_document
+date: '2022-12-03'
+---
+
+```{r setup, include=FALSE}
+rm(list = ls())
+library(plyr)
+library(tm)
+library(stringr)
+library(ggplot2)
+#make a copy and re
+yelp_business_breakfast <- read.csv("yelp_business_breakfast.csv")
+```
+
+```{r}
+hist(yelp_business_breakfast$stars, main = "Breakfast Resturant Stars", xlab = "Stars")
+abline(v = mean(yelp_business_breakfast$stars), col = "red")
+text(x = 3, y = 1500 ,paste("Mean =", round(mean(yelp_business_breakfast$stars), digits = 2)),col = "red",cex = 1)
+text(x = 3, y = 1400 ,paste("SD =", round(sd(yelp_business_breakfast$stars), digits = 2)),col = "red",cex = 1)
+```
+
+```{r}
+#break data into good and bad rating, ratings > 3 good, <=3 bad 
+good <- yelp_business_breakfast[yelp_business_breakfast$stars > 3,]
+bad <- yelp_business_breakfast[yelp_business_breakfast$stars <= 3,]
+```
+
+```{r}
+#count of attributes for good ratings 
+#make a copy and remove punctuation 
+copygood <- good 
+gsub('[[:punct:] ]+',' ',copygood$attributes)
+copygood$attributes<-gsub("'","",as.character(copygood$attributes))
+copygood$attributes<-gsub("}","",as.character(copygood$attributes))
+copygood$attributes<-gsub(":","",as.character(copygood$attributes))
+copygood$attributes<-gsub(",","",as.character(copygood$attributes))
+copygood$attributes<-gsub('"',"",as.character(copygood$attributes))
+#make frequency matrix of terms 
+datgood <- as.matrix(TermDocumentMatrix(copygood$attributes))
+FreqMatgood <- data.frame(ST = rownames(datgood), 
+                      Freq = rowSums(datgood), 
+                      row.names = NULL)
+FreqMatgood[order(FreqMatgood[,2],decreasing = TRUE),]
+#remove false, true,  none 
+copyfreqgood <- FreqMatgood
+copyfreqgood <- copyfreqgood[-which(copyfreqgood$ST == "false"),]
+copyfreqgood <- copyfreqgood[-which(copyfreqgood$ST == "true"),]
+copyfreqgood <- copyfreqgood[-which(copyfreqgood$ST == "none"),]
+orderedfreqgood <- copyfreqgood[order(copyfreqgood[,2],decreasing = TRUE),]
+# get top 25 attributes that appear
+mostfreqgood <- orderedfreqgood[1:25,]
+mostfreqgood <- as.data.frame(mostfreqgood)
+```
+
+```{r}
+#plot most frequent attributes listed in resturant 
+mostfreqgood %>% ggplot(aes(ST, Freq)) + geom_col() + xlab(NULL) + coord_flip()
+```
+```{r}
+#count of attributes for good ratings 
+#remove punctuation 
+copybad <- bad 
+gsub('[[:punct:] ]+',' ',copybad$attributes)
+copybad$attributes<-gsub("'","",as.character(copybad$attributes))
+copybad$attributes<-gsub("}","",as.character(copybad$attributes))
+copybad$attributes<-gsub(":","",as.character(copybad$attributes))
+copybad$attributes<-gsub(",","",as.character(copybad$attributes))
+copybad$attributes<-gsub('"',"",as.character(copybad$attributes))
+#make frequency matrix of terms 
+datbad <- as.matrix(TermDocumentMatrix(copybad$attributes))
+FreqMatbad <- data.frame(ST = rownames(datbad), 
+                      Freq = rowSums(datbad), 
+                      row.names = NULL)
+FreqMatbad[order(FreqMatbad[,2],decreasing = TRUE),]
+#remove false, true,  none 
+copyfreqbad <- FreqMatbad
+copyfreqbad <- copyfreqbad[-which(copyfreqbad$ST == "false"),]
+copyfreqbad <- copyfreqbad[-which(copyfreqbad$ST == "true"),]
+copyfreqbad <- copyfreqbad[-which(copyfreqbad$ST == "none"),]
+orderedfreqbad <- copyfreqbad[order(copyfreqbad[,2],decreasing = TRUE),]
+# get top 25 attributes that appear
+mostfreqbad <- orderedfreqbad[1:25,]
+mostfreqbad <- as.data.frame(mostfreqbad)
+```
+
+```{r}
+#plot most frequent attributes listed in resutrants 
+mostfreqbad %>% ggplot(aes(ST, Freq)) + geom_col() + xlab(NULL) + coord_flip()
+```
+
+
+
