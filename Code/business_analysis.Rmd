@@ -11,7 +11,7 @@ library(tm)
 library(stringr)
 library(ggplot2)
 #make a copy and re
-yelp_business_breakfast <- read.csv("Data/yelp_business_breakfast.csv")
+yelp_business_breakfast <- read.csv("~/newMain/Data/yelp_business_breakfast.csv")
 ```
 
 
@@ -33,22 +33,17 @@ bad <- yelp_business_breakfast[yelp_business_breakfast$stars <= 3,]
 #make a copy and remove punctuation 
 copy1 <- yelp_business_breakfast
 copy1$attributes <- gsub('[[:punct:] ]+',' ',copy1$attributes)
-copy1$attributes<-gsub("'","",as.character(copy1$attributes))
-copy1$attributes<-gsub("}","",as.character(copy1$attributes))
-copy1$attributes<-gsub(":","",as.character(copy1$attributes))
-copy1$attributes<-gsub(",","",as.character(copy1$attributes))
-copy1$attributes<-gsub('"',"",as.character(copy1$attributes))
 #make frequency matrix of terms 
 dat1 <- as.matrix(TermDocumentMatrix(copy1$attributes))
-FreqMat1 <- data.frame(ST = rownames(dat1), 
+FreqMat1 <- data.frame(Word = rownames(dat1), 
                       Freq = rowSums(dat1), 
                       row.names = NULL)
 FreqMat1[order(FreqMat1[,2],decreasing = TRUE),]
 #remove false, true,  none 
 copyfreq1 <- FreqMat1
-copyfreq1 <- copyfreq1[-which(copyfreq1$ST == "false"),]
-copyfreq1 <- copyfreq1[-which(copyfreq1$ST == "true"),]
-copyfreq1 <- copyfreq1[-which(copyfreq1$ST == "none"),]
+copyfreq1 <- copyfreq1[-which(copyfreq1$Word == "false"),]
+copyfreq1 <- copyfreq1[-which(copyfreq1$Word == "true"),]
+copyfreq1 <- copyfreq1[-which(copyfreq1$Word == "none"),]
 orderedfreq1 <- copyfreq1[order(copyfreq1[,2],decreasing = TRUE),]
 # get top 25 attributes that appear
 mostfreq1 <- orderedfreq1[1:25,]
@@ -57,30 +52,25 @@ mostfreq1 <- as.data.frame(mostfreq1)
 
 ```{r}
 #plot most frequent attributes listed in resturant 
-mostfreq1 %>% ggplot(aes(ST, Freq)) + geom_col() + xlab(NULL) + coord_flip()
+mostfreq1 %>% ggplot(aes(Word, Freq)) + geom_col() + xlab(NULL) + coord_flip()
 ```
 
 ```{r}
 #count of attributes for good ratings 
 #make a copy and remove punctuation 
 copygood <- good 
-gsub('[[:punct:] ]+',' ',copygood$attributes)
-copygood$attributes<-gsub("'","",as.character(copygood$attributes))
-copygood$attributes<-gsub("}","",as.character(copygood$attributes))
-copygood$attributes<-gsub(":","",as.character(copygood$attributes))
-copygood$attributes<-gsub(",","",as.character(copygood$attributes))
-copygood$attributes<-gsub('"',"",as.character(copygood$attributes))
+copygood$attributes <- gsub('[[:punct:] ]+',' ',copygood$attributes)
 #make frequency matrix of terms 
 datgood <- as.matrix(TermDocumentMatrix(copygood$attributes))
-FreqMatgood <- data.frame(ST = rownames(datgood), 
+FreqMatgood <- data.frame(Word= rownames(datgood), 
                       Freq = rowSums(datgood), 
                       row.names = NULL)
 FreqMatgood[order(FreqMatgood[,2],decreasing = TRUE),]
 #remove false, true,  none 
 copyfreqgood <- FreqMatgood
-copyfreqgood <- copyfreqgood[-which(copyfreqgood$ST == "false"),]
-copyfreqgood <- copyfreqgood[-which(copyfreqgood$ST == "true"),]
-copyfreqgood <- copyfreqgood[-which(copyfreqgood$ST == "none"),]
+copyfreqgood <- copyfreqgood[-which(copyfreqgood$Word== "false"),]
+copyfreqgood <- copyfreqgood[-which(copyfreqgood$Word== "true"),]
+copyfreqgood <- copyfreqgood[-which(copyfreqgood$Word== "none"),]
 orderedfreqgood <- copyfreqgood[order(copyfreqgood[,2],decreasing = TRUE),]
 # get top 25 attributes that appear
 mostfreqgood <- orderedfreqgood[1:25,]
@@ -88,8 +78,8 @@ mostfreqgood <- as.data.frame(mostfreqgood)
 ```
 
 ```{r}
-#plot most frequent attributes listed in resturant 
-mostfreqgood %>% ggplot(aes(ST, Freq)) + geom_col() + xlab(NULL) + coord_flip()
+#plot most frequent attributes listed in restaurant 
+mostfreqgood %>% ggplot(aes(Word, Freq)) + geom_col() + xlab(NULL) + coord_flip()
 ```
 
 
@@ -97,23 +87,18 @@ mostfreqgood %>% ggplot(aes(ST, Freq)) + geom_col() + xlab(NULL) + coord_flip()
 #count of attributes for good ratings 
 #remove punctuation 
 copybad <- bad 
-gsub('[[:punct:] ]+',' ',copybad$attributes)
-copybad$attributes<-gsub("'","",as.character(copybad$attributes))
-copybad$attributes<-gsub("}","",as.character(copybad$attributes))
-copybad$attributes<-gsub(":","",as.character(copybad$attributes))
-copybad$attributes<-gsub(",","",as.character(copybad$attributes))
-copybad$attributes<-gsub('"',"",as.character(copybad$attributes))
+copybad$attributes <- gsub('[[:punct:] ]+',' ',copybad$attributes)
 #make frequency matrix of terms 
 datbad <- as.matrix(TermDocumentMatrix(copybad$attributes))
-FreqMatbad <- data.frame(ST = rownames(datbad), 
+FreqMatbad <- data.frame(Word= rownames(datbad), 
                       Freq = rowSums(datbad), 
                       row.names = NULL)
 FreqMatbad[order(FreqMatbad[,2],decreasing = TRUE),]
 #remove false, true,  none 
 copyfreqbad <- FreqMatbad
-copyfreqbad <- copyfreqbad[-which(copyfreqbad$ST == "false"),]
-copyfreqbad <- copyfreqbad[-which(copyfreqbad$ST == "true"),]
-copyfreqbad <- copyfreqbad[-which(copyfreqbad$ST == "none"),]
+copyfreqbad <- copyfreqbad[-which(copyfreqbad$Word== "false"),]
+copyfreqbad <- copyfreqbad[-which(copyfreqbad$Word== "true"),]
+copyfreqbad <- copyfreqbad[-which(copyfreqbad$Word== "none"),]
 orderedfreqbad <- copyfreqbad[order(copyfreqbad[,2],decreasing = TRUE),]
 # get top 25 attributes that appear
 mostfreqbad <- orderedfreqbad[1:25,]
@@ -122,7 +107,7 @@ mostfreqbad <- as.data.frame(mostfreqbad)
 
 ```{r}
 #plot most frequent attributes listed in resutrants 
-mostfreqbad %>% ggplot(aes(ST, Freq)) + geom_col() + xlab(NULL) + coord_flip()
+mostfreqbad %>% ggplot(aes(Word, Freq)) + geom_col() + xlab(NULL) + coord_flip()
 ```
 
 
@@ -130,38 +115,79 @@ mostfreqbad %>% ggplot(aes(ST, Freq)) + geom_col() + xlab(NULL) + coord_flip()
 library(reshape2)
 library(dplyr)
 #get filtered review data set
-filt <- read.csv("Data/yelp_review_filtered_breakfast.csv")
+filt <- read.csv("~/newMain/Data/yelp_review_filtered_breakfast.csv")
 # get zscore for standardization of reviews by resturant 
-standardized <- filt %>% group_by(business_id) %>% 
+standardized1 <- filt %>% group_by(business_id) %>% 
   mutate(z_score = scale(stars))
 # plot standardization
-hist(standardized$z_score)
-quantile(standardized$z_score, na.rm = TRUE)
+hist(standardized1$z_score)
+quantile(standardized1$z_score, na.rm = TRUE)
 ```
 
 ```{r}
 #checking if outdoor seating affects rating 
 library(stringi)
-copy2 <- read.csv("Data/yelp_business_breakfast.csv")
-copy2$attributes <- gsub('[[:punct:] ]+',' ',copy2$attributes)
-
-#compare two sample t test for outdooor seatings vs no outdoor seating 
-noseating <- copy2[which(stri_detect_fixed(copy2$attributes, "OutdoorSeating False")),]
-seating <- copy2[-which(stri_detect_fixed(copy2$attributes, "OutdoorSeating False")),]
-t.test(noseating$stars, seating$stars)
+copy2 <- read.csv("~/newMain/Data/yelp_business_breakfast.csv")
+standardized2 <- copy2 %>% mutate(z_score = (stars - mean(stars)/sd(stars)))
+mean(standardized2$z_score);sd(standardized2$z_score)
+standardized2$attributes <- gsub('[[:punct:] ]+',' ',standardized2$attributes)
+#plot histogram 
+hist(standardized2$z_score,main = "Breakfast Resturant Stars Standardized", xlab = "Standardized Star Rating ")
+#compare two sample t test for outdoor seating vs no outdoor seating 
+seating <- standardized2[which(stri_detect_fixed(standardized2$attributes, "OutdoorSeating True")),]
+noseating <- standardized2[which(stri_detect_fixed(standardized2$attributes, "OutdoorSeating False")),]
+hist(seating$z_score)
+hist(noseating$z_score)
+t.test(seating$z_score, noseating$z_score, alternative = "greater")
+wilcox.test(seating$z_score, noseating$z_score)
 ```
 
 
 ```{r}
-#compare two sample t test for  casual vs not causual 
-nocasual <- copy2[-which(stri_detect_fixed(copy2$attributes, "casual True")),]
-casual <- copy2[which(stri_detect_fixed(copy2$attributes, "casual True")),]
-t.test(nocasual$stars, casual$stars)
+#compare two sample t test for  casual vs not casual
+casual <- standardized2[which(stri_detect_fixed(standardized2$attributes, "casual True")),]
+nocasual <- standardized2[which(stri_detect_fixed(standardized2$attributes, "casual False")),]
+hist(casual$z_score)
+hist(nocasual$z_score)
+t.test(casual$z_score, nocasual$z_score, alternative = "greater")
+wilcox.test(casual$z_score, nocasual$z_score)
+#casual appears more because thre is resturant attire casual and casual true
+```
+
+```{r}
+#compare two sample t test for  credit vs not creditcard
+credit <- standardized2[which(stri_detect_fixed(standardized2$attributes, "BusinessAcceptsCreditCards True")),]
+nocredit <- standardized2[which(stri_detect_fixed(standardized2$attributes, "BusinessAcceptsCreditCards False")),]
+hist(credit$z_score)
+hist(nocredit$z_score)
+t.test(credit$z_score, nocredit$z_score, alternative = "greater")
+wilcox.test(casual$z_score, nocasual$z_score)
+```
+
+
+```{r}
+#compare two sample t test for groups vs not groups
+group <- standardized2[which(stri_detect_fixed(standardized2$attributes, "RestaurantsGoodForGroups True")),]
+nogroup <- standardized2[which(stri_detect_fixed(standardized2$attributes, "RestaurantsGoodForGroups False")),]
+hist(group$z_score)
+hist(nogroup$z_score)
+t.test(group$z_score, nogroup$z_score, alternative = "greater")
+wilcox.test(group$z_score, nogroup$z_score)
 ```
 
 ```{r}
 #compare two sample t test for takeout vs no takeout
-notakeout <- copy2[-which(stri_detect_fixed(copy2$attributes, "RestaurantsTakeOut True")),]
-takeout <- copy2[which(stri_detect_fixed(copy2$attributes, "RestaurantsTakeOut True")),]
-t.test(notakeout$stars, takeout$stars)
+takeout <- standardized2[which(stri_detect_fixed(standardized2$attributes, "RestaurantsTakeOut True")),]
+notakeout <- standardized2[which(stri_detect_fixed(standardized2$attributes, "RestaurantsTakeOut False")),]
+hist(takeout$z_score)
+hist(notakeout$z_score)
+take1 <- as.data.frame(takeout$z_score)
+take2 <- as.data.frame(notakeout$z_score)
+t.test(take1, take2, alternative = "greater")
+wilcox.test(takeout$z_score, notakeout$z_score)
 ```
+
+
+
+
+
