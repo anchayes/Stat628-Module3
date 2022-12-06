@@ -10,4 +10,4 @@ We have included a Plots folder for all plots produced during our analysis.
 
 We inlcuded an executive summary of our analysis as well as a presentation of our findings and recomendations. 
 
-We produced a shiny app to visualize our findings.
+We produced a shiny app to visualize our findings: https://dgao0312.shinyapps.io/module3/ 
